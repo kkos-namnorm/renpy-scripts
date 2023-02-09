@@ -42,42 +42,41 @@ def translate(lines, file):
                 texts.append(res.group(3))
     if not texts:
         return
-    else:
-        body = {
-            "targetLanguageCode": args.LanguageCode,
-            "texts": texts,
-            "folderId": args.folder_id,
-        }
+    body = {
+        "targetLanguageCode": args.LanguageCode,
+        "texts": texts,
+        "folderId": args.folder_id,
+    }
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer {0}".format(IAM_TOKEN)
-        }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {0}".format(IAM_TOKEN)
+    }
 
-        response = requests.post('https://translate.api.cloud.yandex.net/translate/v2/translate',
-            json = body,
-            headers = headers
-        )
+    response = requests.post('https://translate.api.cloud.yandex.net/translate/v2/translate',
+        json = body,
+        headers = headers
+    )
 
-        os.rename(file, file +"_old")
+    os.rename(file, file +"_old")
 
-        translation_file_new = open(file, 'w')
-        tr_line = 0
-        response_text = ast.literal_eval(response.text)
+    translation_file_new = open(file, 'w')
+    tr_line = 0
+    response_text = ast.literal_eval(response.text)
 
-        for i in range(0, len(lines)):
-            row = lines[i]
-            res = re.search(r"^\s+\s(\w+\s)?\"\"", row)
-            if res is None:
-                translation_file_new.write(row)
-                continue
-            else:
-                translated_text = response_text['translations'][tr_line]['text'].replace('"','\\"')
-                translation_file_new.write(res.group(0)[:-1] + translated_text + "\"\n")
-                tr_line = tr_line+1
-        
-        translation_file_new.close()
-        os.remove(file +"_old")
+    for i in range(0, len(lines)):
+        row = lines[i]
+        res = re.search(r"^\s+\s(\w+\s)?\"\"", row)
+        if res is None:
+            translation_file_new.write(row)
+            continue
+        else:
+            translated_text = response_text['translations'][tr_line]['text'].replace('"','\\"')
+            translation_file_new.write(res.group(0)[:-1] + translated_text + "\"\n")
+            tr_line = tr_line+1
+    
+    translation_file_new.close()
+    os.remove(file +"_old")
 
 
 
